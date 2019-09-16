@@ -5,7 +5,7 @@
     Example of multiple stacks in one list (array).
 
     Usage:
-    >>> s = MultiStack(4, 4)
+    >>> s = MultiStack(num=4, size=4)
     >>> s.push(stack=1, value=35)
     >>> s.push(1, 10)
     >>> s.push(0, 2)
