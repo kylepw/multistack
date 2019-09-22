@@ -28,6 +28,7 @@ class MultiStack:
         self.size = size or 3
         self._array = [None] * self.num * self.size
         self._val_count = [0] * self.size
+        self._mins = [None] * self.num
 
     def __str__(self):
         return str(self._array)
@@ -55,6 +56,7 @@ class MultiStack:
         else:
             index = self._get_top_index(stack) - 1
         self._array[index] = value
+        self._mins[stack] = value if not self._mins[stack] or value < self._mins[stack] else self._mins[stack]
         self._val_count[stack] += 1
 
     def pop(self, stack):
@@ -62,8 +64,14 @@ class MultiStack:
             raise ValueError('Stack %s is empty', stack)
         value = self._array[self._get_top_index(stack)]
         self._array[self._get_top_index(stack)] = None
+        if self._mins[stack] == value:
+            self._mins[stack] = self._array[self._get_top_index(stack)]
         self._val_count[stack] -= 1
         return value
+
+    def min(self, stack):
+        if len(self._mins) > stack:
+            return self._mins[stack]
 
     def is_empty(self, stack):
         return True if self._val_count[stack] == 0 else False
@@ -75,7 +83,7 @@ class MultiStack:
 class TestMultiStack(unittest.TestCase):
     def setUp(self):
         # `N` stacks of size `N`
-        N = 3
+        N = 10
         self.s = MultiStack(num=N, size=N)
 
         for i in range(N):
@@ -105,9 +113,16 @@ class TestMultiStack(unittest.TestCase):
 
         for stack in range(self.s.num):
             with self.assertRaises(ValueError):
-                self.s.pop(stack)
-                self.s.pop(stack)
+                for _ in range(self.s.size):
+                    self.s.pop(stack)
 
+    def test_min(self):
+        for stack in range(self.s.num):
+            m = self.s.min(stack)
+            values = []
+            while self.s.peek(stack):
+                values.append(self.s.pop(stack))
+            self.assertEqual(m, min(values))
 
 if __name__ == '__ main__':
     unittest.main()
