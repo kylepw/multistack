@@ -28,7 +28,7 @@ class MultiStack:
         self.size = size or 3
         self._array = [None] * self.num * self.size
         self._val_count = [0] * self.size
-        self._mins = [None] * self.num
+        self._mins = [[] for _ in range(self.num)]
 
     def __str__(self):
         return str(self._array)
@@ -56,7 +56,8 @@ class MultiStack:
         else:
             index = self._get_top_index(stack) - 1
         self._array[index] = value
-        self._mins[stack] = value if not self._mins[stack] or value < self._mins[stack] else self._mins[stack]
+        if not self._mins[stack] or value < self._mins[stack][-1]:
+            self._mins[stack].append(value)
         self._val_count[stack] += 1
 
     def pop(self, stack):
@@ -64,14 +65,14 @@ class MultiStack:
             raise ValueError('Stack %s is empty', stack)
         value = self._array[self._get_top_index(stack)]
         self._array[self._get_top_index(stack)] = None
-        if self._mins[stack] == value:
-            self._mins[stack] = self._array[self._get_top_index(stack)]
+        if self._mins[stack] and self._mins[stack][-1] == value:
+            self._mins[stack].pop()
         self._val_count[stack] -= 1
         return value
 
     def min(self, stack):
         if len(self._mins) > stack:
-            return self._mins[stack]
+            return self._mins[stack][-1] if self._mins[stack] else None
 
     def is_empty(self, stack):
         return True if self._val_count[stack] == 0 else False
@@ -83,7 +84,7 @@ class MultiStack:
 class TestMultiStack(unittest.TestCase):
     def setUp(self):
         # `N` stacks of size `N`
-        N = 10
+        N = 4
         self.s = MultiStack(num=N, size=N)
 
         for i in range(N):
@@ -120,6 +121,7 @@ class TestMultiStack(unittest.TestCase):
         for stack in range(self.s.num):
             m = self.s.min(stack)
             values = []
+            print(self.s._array)
             while self.s.peek(stack):
                 values.append(self.s.pop(stack))
             self.assertEqual(m, min(values))
